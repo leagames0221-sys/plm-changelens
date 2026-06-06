@@ -10,6 +10,14 @@ that by hand is slow and error-prone. `plm-changelens` does the mechanical part
 exactly, and lets an LLM draft the paperwork — keeping the safety-critical
 computation deterministic and the writing assistive.
 
+## Demo
+
+[![PLM ChangeLens demo](docs/demo-frame.png)](video/out/plm_changelens_demo.mp4)
+
+A ~90s narrated walkthrough ([`video/out/plm_changelens_demo.mp4`](video/out/plm_changelens_demo.mp4)):
+two BOM versions → deterministic 4-category diff → AI impact summary → EARS
+requirement / test drafts → traceability impact. All data shown is synthetic.
+
 ## Why this split matters
 
 ```

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PLM ChangeLens — デモ（部品表の変更 → 影響と書類ドラフト）</title>
+<style>
+  :root{--ink:#0a1322;--ink2:#13233f;--text:#33425b;--soft:#64748b;--line:#e3e8ef;--bg:#fafbfc;--accent:#0d9488;--accent2:#2dd4bf;--card:#fff;--ok:#16a34a;--okbg:#f0fdf4;--add:#16a34a;--del:#dc2626;--qty:#d97706;--rev:#7c3aed;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans JP',-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);line-height:1.85;font-feature-settings:"palt" 1;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 2.2rem}
+  section{padding:3.4rem 0;border-top:1px solid var(--line);min-height:88vh;display:flex;flex-direction:column;justify-content:center}
+  h2{font-size:2rem;font-weight:900;letter-spacing:-.02em;margin-bottom:1rem}
+  h2 .n{font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--accent);display:block;letter-spacing:.18em;margin-bottom:.4rem}
+  h2 .ac{color:var(--accent)}
+  p{color:var(--text);margin-bottom:.6rem;font-size:1.1rem}
+  .lead{font-size:1.25rem;color:var(--ink2)}
+  .badge{display:inline-block;font-size:.85rem;font-weight:700;padding:3px 12px;border-radius:6px;background:#ccfbf1;color:#0f766e;margin-left:.4rem;vertical-align:middle}
+  .badge.warn{background:#fef9c3;color:#854d0e}
+  ul{padding-left:1.4rem;margin:.5rem 0}
+  li{color:var(--text);margin:.4rem 0;font-size:1.05rem}
+  code{font-family:'JetBrains Mono',monospace;background:#f1f5f9;color:#0f766e;padding:1px 7px;border-radius:4px;font-size:.92em}
+  table{width:100%;border-collapse:collapse;font-size:1.02rem;margin-top:.9rem;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th{background:var(--ink);color:#fff;text-align:left;padding:.7rem 1rem;font-size:.85rem;letter-spacing:.04em}
+  td{padding:.7rem 1rem;border-top:1px solid var(--line);color:var(--text);font-size:1rem}
+  tr:nth-child(even) td{background:#fafbfc}
+  .pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700;padding:2px 9px;border-radius:999px}
+  .pill.add{background:#dcfce7;color:var(--add)} .pill.del{background:#fee2e2;color:var(--del)}
+  .pill.qty{background:#fef3c7;color:var(--qty)} .pill.rev{background:#ede9fe;color:var(--rev)}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1rem}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.2rem 1.4rem}
+  .card h4{font-size:.92rem;color:var(--soft);letter-spacing:.04em;margin-bottom:.5rem;font-weight:800}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;align-items:center;background:linear-gradient(135deg,#0a1322,#13233f 55%,#0a1322);color:#fff;border:none}
+  .hero h1{font-size:3.7rem;font-weight:900;letter-spacing:-.03em;line-height:1.22}
+  .hero h1 .hl{background:linear-gradient(120deg,#2dd4bf,#0d9488);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero .lead{font-size:1.4rem;color:rgba(255,255,255,.86);margin-top:1.4rem;font-weight:300}
+  .hero .eyebrow{display:inline-block;border:1px solid rgba(45,212,191,.5);color:var(--accent2);border-radius:999px;padding:.35rem 1.1rem;font-size:.85rem;letter-spacing:.18em;margin-bottom:1.6rem}
+  .hero .mono{color:rgba(255,255,255,.6);margin-top:1.8rem;font-size:.95rem}
+
+  .pipe{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:1.2rem}
+  .pipe .box{border-radius:14px;padding:1.3rem 1.5rem;border:1px solid var(--line);background:#fff}
+  .pipe .box.det{border-top:4px solid var(--accent)}
+  .pipe .box.llm{border-top:4px solid #94a3b8}
+  .pipe .box h3{font-size:1.15rem;margin-bottom:.5rem}
+  .arrow{text-align:center;color:var(--soft);font-size:1rem;margin:.5rem 0}
+
+  .bubble{background:#fff;border:1px solid var(--line);border-radius:14px;padding:1.4rem 1.7rem;box-shadow:0 4px 16px rgba(10,19,34,.06);font-size:1.2rem;line-height:1.9;color:var(--ink)}
+  .bubble .who{font-size:.85rem;color:var(--soft);font-weight:700;margin-bottom:.5rem}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.2rem}
+  .step{background:#fff;border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:12px;padding:1.1rem}
+  .step .k{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent);font-weight:700}
+  .step .t{font-weight:800;margin:.3rem 0;font-size:1.05rem}
+  .step .d{font-size:.95rem;color:var(--soft)}
+  .term{background:#0a1322;color:#e2e8f0;border-radius:12px;padding:1.3rem 1.6rem;font-family:'JetBrains Mono',monospace;font-size:.98rem;line-height:1.7;overflow:hidden}
+  .term .pr{color:#2dd4bf}
+  .free{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
+  .free .c{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.2rem;text-align:center}
+  .free .c .big{font-size:1.5rem;font-weight:900;color:var(--accent)}
+  .free .c .s{font-size:.9rem;color:var(--soft);margin-top:.3rem}
+</style>
+</head>
+<body>
+
+<!-- S1 -->
+<section class="hero sec-hero">
+  <div class="wrap">
+    <span class="eyebrow">医療機器 PLM 変更管理支援 / PoC</span>
+    <h1><span class="hl">PLM ChangeLens</span><br/>部品表の変更を、<br/>影響と書類の下書きに。</h1>
+    <p class="lead">2 つの部品表をくらべ、何がどう変わったかを正確に検出。<br/>その変更から、書類の更新ドラフトをエーアイが提案します。</p>
+    <p class="mono">deterministic core + optional AI layer · runtime dependencies = 0</p>
+  </div>
+</section>
+
+<!-- S2 -->
+<section class="sec-problem">
+  <div class="wrap">
+    <h2><span class="n">THE PROBLEM</span>部品を 1 つ変えるたび、<span class="ac">書類の山</span>を直す</h2>
+    <p class="lead">医療機器は、部品を変更するたびに関連する書類をすべて直す必要があります（規制要件）。</p>
+    <ul>
+      <li>要件定義書・設計書・テスト仕様書</li>
+      <li>要件と設計とテストの対応表（トレーサビリティ）</li>
+    </ul>
+    <p>どこを直すべきかを人が手作業で探す。遅く、ミスが起きやすい工程です。</p>
+  </div>
+</section>
+
+<!-- S3 -->
+<section class="sec-input">
+  <div class="wrap">
+    <h2><span class="n">INPUT</span>2 つの<span class="ac">部品表</span>を入れる</h2>
+    <div class="grid2">
+      <div class="card"><h4>旧版 bom_old.csv</h4>
+        <table><tr><th>レベル</th><th>部品番号</th><th>数量</th><th>版</th></tr>
+        <tr><td>0</td><td class="mono">ASSY-100</td><td>1</td><td>A</td></tr>
+        <tr><td>2</td><td class="mono">PART-310</td><td>4</td><td>A</td></tr>
+        <tr><td>2</td><td class="mono">PART-320</td><td>1</td><td>B</td></tr>
+        <tr><td>1</td><td class="mono">PART-110</td><td>1</td><td>C</td></tr></table>
+      </div>
+      <div class="card"><h4>新版 bom_new.csv</h4>
+        <table><tr><th>レベル</th><th>部品番号</th><th>数量</th><th>版</th></tr>
+        <tr><td>0</td><td class="mono">ASSY-100</td><td>1</td><td>A</td></tr>
+        <tr><td>2</td><td class="mono">PART-310</td><td>6</td><td>A</td></tr>
+        <tr><td>2</td><td class="mono">PART-320</td><td>1</td><td>C</td></tr>
+        <tr><td>2</td><td class="mono">PART-330</td><td>2</td><td>A</td></tr></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S4 -->
+<section class="sec-diff">
+  <div class="wrap">
+    <h2><span class="n">STEP 1 · DETERMINISTIC</span>正確な<span class="ac">間違い探し</span><span class="badge">エーアイ不使用・幻覚ゼロ</span></h2>
+    <p>2 つの部品表の差を、決まった計算で正確に洗い出します。</p>
+    <table>
+      <tr><th>区分</th><th>部品</th><th>位置</th><th>変化</th></tr>
+      <tr><td><span class="pill add">追加</span></td><td class="mono">PART-330</td><td>ASSY-100 / SUB-210</td><td>数量 2・版 A</td></tr>
+      <tr><td><span class="pill del">削除</span></td><td class="mono">PART-110</td><td>ASSY-100</td><td>旧 数量 1・版 C</td></tr>
+      <tr><td><span class="pill qty">数量変更</span></td><td class="mono">PART-310</td><td>ASSY-100 / SUB-210</td><td>4 → 6</td></tr>
+      <tr><td><span class="pill rev">版更新</span></td><td class="mono">PART-320</td><td>ASSY-100 / SUB-210</td><td>B → C</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- S5 -->
+<section class="sec-impact">
+  <div class="wrap">
+    <h2><span class="n">STEP 2 · AI SUMMARY</span><span class="ac">変更影響</span>を言葉で説明</h2>
+    <p>洗い出した差をエーアイが日本語で要約します。各説明には、根拠となる部品が必ずひも付きます。</p>
+    <div class="card">
+      <p>・<span class="mono">PART-310</span> の数量増加は、上位組立 <span class="mono">SUB-210</span> の検証に影響します。<span class="badge">根拠: PART-310</span></p>
+      <p>・<span class="mono">PART-320</span> の版更新は、関連する設計と試験の確認が必要です。<span class="badge">根拠: PART-320</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- S6 -->
+<section class="sec-drafts">
+  <div class="wrap">
+    <h2><span class="n">STEP 3 · DRAFTS</span>要件・テストの<span class="ac">更新ドラフト</span><span class="badge warn">要レビュー</span></h2>
+    <p>直すべき書類の下書きをエーアイが提案します。人はゼロから書かず、確認して直すだけ。</p>
+    <div class="card">
+      <h4>要件ドラフト（イアース形式）</h4>
+      <p class="mono">When PART-330 is added, the system shall verify the affected sub-assembly behaviour.</p>
+      <h4 style="margin-top:.9rem">テストドラフト</h4>
+      <p class="mono">integration test: verify behaviour affected by part_added of PART-330.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S7 -->
+<section class="sec-trace">
+  <div class="wrap">
+    <h2><span class="n">STEP 4 · TRACEABILITY</span><span class="ac">対応表</span>のどこが影響するか</h2>
+    <p>要件と設計とテストの対応表から、影響を受ける行と、新しく必要な対応を示します。</p>
+    <table>
+      <tr><th>要件</th><th>関係部品</th><th>影響理由</th></tr>
+      <tr><td class="mono">REQ-001</td><td class="mono">PART-310</td><td>数量変更</td></tr>
+      <tr><td class="mono">REQ-002</td><td class="mono">PART-320 / PART-110</td><td>版更新・削除</td></tr>
+    </table>
+    <p style="margin-top:.7rem">新しく対応が必要: <span class="mono">PART-330</span><span class="badge">未リンク候補</span></p>
+  </div>
+</section>
+
+<!-- S8 -->
+<section class="sec-split">
+  <div class="wrap">
+    <h2><span class="n">DESIGN</span>安全な部分は<span class="ac">エーアイに頼らない</span></h2>
+    <div class="pipe">
+      <div class="box det"><h3>決定論コア</h3><p>何が変わったかの計算。エーアイ不使用・ネット不要・毎回同じ結果。</p></div>
+      <div class="box llm"><h3>エーアイ任意層</h3><p>文章の下書きだけを担当。無くてもコアは動きます。</p></div>
+    </div>
+    <p class="arrow">命にかかわる計算は決定論で確実に。面倒な文章作成だけをエーアイが補助します。</p>
+  </div>
+</section>
+
+<!-- S9 -->
+<section class="sec-free">
+  <div class="wrap">
+    <h2><span class="n">CONSTRAINTS</span>すべて<span class="ac">無料</span>・登録不要で動く</h2>
+    <div class="free">
+      <div class="c"><div class="big">無料</div><div class="s">課金サービス不使用</div></div>
+      <div class="c"><div class="big">カード不要</div><div class="s">登録なしで起動</div></div>
+      <div class="c"><div class="big">ローカル</div><div class="s">エーアイはローカル可</div></div>
+      <div class="c"><div class="big">依存ゼロ</div><div class="s">標準ライブラリのみ</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- S10 -->
+<section class="sec-license">
+  <div class="wrap">
+    <h2><span class="n">OPEN SOURCE</span>エムアイティー ライセンス</h2>
+    <p class="lead">PLM ChangeLens — 部品表の変更から、影響と書類ドラフトを下書きするツール。</p>
+    <p>表示データはすべて合成データです。商用の製品情報は含みません。</p>
+    <p class="mono">MIT License · deterministic core + optional AI layer</p>
+  </div>
+</section>
+
+</body>
+</html>

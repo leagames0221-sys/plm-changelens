@@ -25,6 +25,10 @@ venv/
 .coverage
 htmlcov/
 
+# --- video build intermediates (keep video/out/*.mp4 tracked) ---
+video/_temp/
+video/out/*.wav
+
 # --- OS / editor ---
 .DS_Store
 Thumbs.db
