@@ -47,4 +47,5 @@ PLM change-control framing.
 
 ## Source
 
-The full prior-art survey is kept in private project notes and is not part of this repository.
+The full prior-art survey (each adopted seed cross-checked against its source)
+is kept in private project notes and is not part of this repository.

@@ -6,10 +6,11 @@ set -euo pipefail
 
 fail=0
 
-# 1. No private directories should ever be tracked.
-if git ls-files | grep -E '(^|/)\.claude/(?!settings\.json)|(^|/)(private|private|private)/' >/dev/null 2>&1; then
+# 1. No private directories should ever be tracked (only .claude/settings.json
+#    is allowed under .claude/).
+if git ls-files | grep -E '(^|/)\.claude/(?!settings\.json)|(^|/)private/' >/dev/null 2>&1; then
   echo "ERROR: a private path is tracked by git:" >&2
-  git ls-files | grep -E '(^|/)\.claude/|(^|/)(private|private|private)/' >&2 || true
+  git ls-files | grep -E '(^|/)\.claude/|(^|/)private/' >&2 || true
   fail=1
 fi
 

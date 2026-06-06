@@ -8,8 +8,7 @@
 *.env
 .tmp/
 private/
-private/
-private/
+*.private
 
 # --- Python ---
 __pycache__/
