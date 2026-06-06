@@ -150,7 +150,7 @@ existing library spans BOM-diff → traceability → drafted docs, so that glue
 
 ## Status
 
-Implemented and tested (41 tests, CI green on Python 3.11 & 3.12): the
+Implemented and tested (44 tests, CI green on Python 3.11 & 3.12): the
 deterministic core + CLI (`diff`, `trace`) and the optional LLM layer (`impact`,
 `draft`) with provider swap. Remaining: packaging and broader BOM-format coverage.
 
