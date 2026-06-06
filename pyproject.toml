@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "plm-changelens"
+version = "0.1.0"
+description = "Deterministic BOM (bill of materials) structural diff with an optional LLM layer that drafts change-impact summaries and requirement/test-spec updates for regulated (medical-device) PLM change control."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "leagames0221-sys" }]
+keywords = ["bom", "plm", "diff", "tree-edit-distance", "medical-device", "iec-62304", "traceability", "ai-driven-development"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+# Runtime dependencies are intentionally EMPTY (minimum supply-chain exposure).
+# Each addition requires an ADR. The deterministic core uses only the stdlib.
+dependencies = []
+
+[project.optional-dependencies]
+# LLM providers are opt-in. The tool runs fully without them (deterministic core).
+ollama = []
+dev = ["pytest>=7", "ruff>=0.5"]
+
+[project.scripts]
+plm-changelens = "plm_changelens.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/leagames0221-sys/plm-changelens"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/plm_changelens"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

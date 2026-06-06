@@ -1,0 +1,6 @@
+{
+  "env": {
+    "SECURITY_REVIEW_MODEL": "claude-haiku-4-5-20251001",
+    "SG_AGENTIC_MODEL": "claude-haiku-4-5-20251001"
+  }
+}

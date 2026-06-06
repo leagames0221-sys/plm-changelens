@@ -1,0 +1,6 @@
+level,part_number,quantity,revision,description
+0,ASSY-100,1,A,Top assembly
+1,SUB-210,2,A,Subassembly
+2,PART-310,4,A,Screw M3
+2,PART-320,1,B,Bracket
+1,PART-110,1,C,Cover panel
