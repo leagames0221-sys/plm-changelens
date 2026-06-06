@@ -28,6 +28,14 @@ so unrelated parts are never aligned as an "update".
 - `dependencies = []` preserved (minimum supply-chain exposure).
 - If trees exceed a few thousand nodes and performance bites, revisit with APTED
   (a follow-up ADR), without changing the public `diff()` contract.
+- **Ordered vs unordered children**: Zhang-Shasha is an *ordered* tree-edit
+  distance, but a BOM's child lines are an unordered set keyed by part number.
+  Without care, merely re-sorting the input CSV would surface spurious
+  add/remove pairs. The PLM loader therefore **canonicalizes child order**
+  (sort by part_number, revision, quantity) before diffing, making the result
+  order-insensitive while still detecting real add/remove/quantity/revision
+  changes and genuine re-parenting. (Regression test:
+  `test_sibling_reorder_is_not_a_change`.)
 
 ## Alternatives considered
 

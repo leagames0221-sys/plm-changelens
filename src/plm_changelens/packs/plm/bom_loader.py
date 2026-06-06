@@ -104,7 +104,29 @@ def _build_tree(rows: list[dict[str, str]], colmap: dict[str, str]) -> Node:
 
     if root is None:
         raise BomFormatError("no level-0 (root) row found")
+    _canonicalize(root)
     return root
+
+
+def _canonicalize(node: Node) -> None:
+    """Sort children into a canonical order, recursively.
+
+    A BOM's child lines are an unordered set keyed by part number; row order in
+    a CSV export is a display artifact, not a change. The diff core uses an
+    *ordered* tree-edit distance, so without this a mere re-sort of the input
+    would surface spurious add/remove pairs. Sorting by (part_number, revision,
+    quantity) makes the diff order-insensitive while still detecting real
+    add/remove/quantity/revision changes (and genuine re-parenting).
+    """
+    for child in node.children:
+        _canonicalize(child)
+    node.children.sort(
+        key=lambda n: (
+            n.payload.part_number,
+            n.payload.revision,
+            n.payload.quantity,
+        )
+    )
 
 
 def _parse_level(value: str, row: int) -> int:

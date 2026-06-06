@@ -139,6 +139,12 @@ Remaining: documentation polish, packaging, and broader BOM-format coverage.
   guaranteed and would need a conversion layer.
 - Tree-diff cost grows with BOM size; very large BOMs (thousands of nodes) may
   need the APTED variant (see ADR-0002).
+- Part identity is the part number. Child line order is treated as
+  insignificant (canonicalized before diff); a part moved to a *different*
+  parent is reported as a remove + add (with both paths), which is intended.
+- The AI impact/draft layer makes one model call per change, so very large
+  change sets are slow with a real provider (the deterministic `diff`/`trace`
+  are unaffected).
 
 ## License
 

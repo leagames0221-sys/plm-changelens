@@ -61,3 +61,21 @@ def test_determinism_same_changeset_each_run():
     a = _run().to_dict()
     b = _run().to_dict()
     assert a == b
+
+
+def test_sibling_reorder_is_not_a_change(tmp_path):
+    """Re-sorting BOM rows (same parts) must NOT surface spurious add/remove."""
+    from plm_changelens.packs.plm.bom_loader import load_bom_csv
+
+    old = tmp_path / "old.csv"
+    new = tmp_path / "new.csv"
+    old.write_text(
+        "level,part_number,quantity,revision\n0,TOP,1,A\n1,PART-A,1,A\n1,PART-B,1,A\n",
+        encoding="utf-8",
+    )
+    new.write_text(
+        "level,part_number,quantity,revision\n0,TOP,1,A\n1,PART-B,1,A\n1,PART-A,1,A\n",
+        encoding="utf-8",
+    )
+    cs = diff_boms(load_bom_csv(old), load_bom_csv(new))
+    assert sum(cs.counts().values()) == 0
