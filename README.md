@@ -33,12 +33,31 @@ Only the writing assistance does — and the tool runs fully without it.
 ## Quick start (no install, no account, no card)
 
 ```bash
-# deterministic diff, human-readable
+# deterministic diff, human-readable (no LLM, no network)
 PYTHONPATH=src python -m plm_changelens.cli diff examples/bom_old.csv examples/bom_new.csv
 
 # machine-readable JSON
 PYTHONPATH=src python -m plm_changelens.cli diff old.csv new.csv --format json
+
+# traceability-table impact: which requirement/design/test links are affected
+PYTHONPATH=src python -m plm_changelens.cli trace examples/bom_old.csv examples/bom_new.csv examples/trace_table.csv
 ```
+
+### Optional LLM layer (off by default)
+
+```bash
+# change-impact summary; default provider is an offline deterministic mock
+PYTHONPATH=src python -m plm_changelens.cli impact old.csv new.csv
+
+# requirement/test-spec update DRAFTS (EARS-formatted, review-required)
+PYTHONPATH=src python -m plm_changelens.cli draft old.csv new.csv
+
+# use a real local model instead of the mock:
+LLM_PROVIDER=ollama PYTHONPATH=src python -m plm_changelens.cli impact old.csv new.csv
+```
+
+Providers: `mock` (default, offline), `ollama` (local), `workers_ai` (free-tier
+hosted, opt-in with credentials). Swap with `LLM_PROVIDER` or `--llm-provider`.
 
 ### BOM CSV format
 
@@ -66,8 +85,9 @@ Architecture decisions: [`docs/adr/`](docs/adr/). Prior-art audit:
 
 ## Status
 
-Phase 1 (deterministic core + CLI) is implemented and tested. The optional LLM
-layer (impact summary, document drafts, traceability diff) is Phase 2.
+Implemented and tested (36 tests): the deterministic core + CLI (`diff`,
+`trace`) and the optional LLM layer (`impact`, `draft`) with provider swap.
+Remaining: documentation polish, packaging, and broader BOM-format coverage.
 
 ## Limitations (honest disclosure)
 

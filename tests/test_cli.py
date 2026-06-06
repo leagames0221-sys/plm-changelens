@@ -40,3 +40,35 @@ def test_cli_bad_file_returns_exit_2(capsys):
     err = capsys.readouterr().err
     assert rc == 2
     assert "error:" in err
+
+
+TRACE = str(FIX / "trace_table.csv")
+
+
+def test_cli_impact_with_mock(capsys, monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    rc = main(["impact", OLD, NEW, "--llm-provider", "mock"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    data = json.loads(out)
+    assert len(data["findings"]) == 4
+    assert all("evidence" in f for f in data["findings"])
+
+
+def test_cli_draft_with_mock(capsys, monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    rc = main(["draft", OLD, NEW, "--llm-provider", "mock"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    data = json.loads(out)
+    assert "DRAFT" in data["label"]
+    assert len(data["artifacts"]) == 4
+
+
+def test_cli_trace(capsys):
+    rc = main(["trace", OLD, NEW, TRACE])
+    out = capsys.readouterr().out
+    assert rc == 0
+    data = json.loads(out)
+    assert data["new_link_candidates"] == ["PART-330"]
+    assert len(data["affected"]) == 2

@@ -1,0 +1,4 @@
+requirement_id,design_id,test_id,part_numbers
+REQ-001,DSN-001,TST-001,PART-310
+REQ-002,DSN-002,TST-002,PART-320;PART-110
+REQ-003,DSN-003,TST-003,SUB-210
