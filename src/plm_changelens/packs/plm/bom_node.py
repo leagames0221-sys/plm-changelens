@@ -31,11 +31,16 @@ class BomAttrs:
     def snapshot(self) -> dict[str, Any]:
         snap = {
             "part_number": self.part_number,
-            "quantity": self.quantity,
+            "quantity": _clean_qty(self.quantity),
             "revision": self.revision,
         }
         snap.update(self.extra)
         return snap
+
+
+def _clean_qty(q: float) -> float | int:
+    """Render whole quantities as int (4 not 4.0); keep fractional as float."""
+    return int(q) if float(q).is_integer() else q
 
 
 def insert_cost(_node: Node) -> float:

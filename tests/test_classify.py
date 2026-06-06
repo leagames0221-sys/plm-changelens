@@ -79,3 +79,22 @@ def test_sibling_reorder_is_not_a_change(tmp_path):
     )
     cs = diff_boms(load_bom_csv(old), load_bom_csv(new))
     assert sum(cs.counts().values()) == 0
+
+
+def test_same_part_at_two_levels_change_is_localized(tmp_path):
+    """A part number used at two levels: a change to one must not bleed to the other."""
+    from plm_changelens.core.change_model import ChangeCategory
+    from plm_changelens.packs.plm.bom_loader import load_bom_csv
+
+    old = tmp_path / "old.csv"
+    new = tmp_path / "new.csv"
+    base = (
+        "level,part_number,quantity,revision\n"
+        "0,TOP,1,A\n1,COMMON,1,A\n1,SUB,1,A\n2,COMMON,1,{}\n"
+    )
+    old.write_text(base.format("A"), encoding="utf-8")
+    new.write_text(base.format("B"), encoding="utf-8")  # only the deep COMMON changes
+    cs = diff_boms(load_bom_csv(old), load_bom_csv(new))
+    rev = cs.by_category(ChangeCategory.REVISION_UPDATED)
+    assert len(rev) == 1
+    assert rev[0].path == ["TOP", "SUB"]  # localized to the nested instance only

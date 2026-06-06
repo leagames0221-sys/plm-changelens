@@ -94,6 +94,31 @@ hosted, opt-in with credentials). Swap with `LLM_PROVIDER` or `--llm-provider`.
 Extra columns (description, supplier, …) are preserved. Malformed input is
 rejected with the offending row number — the tool never guesses.
 
+### Sample output
+
+```text
+$ plm-changelens diff examples/bom_old.csv examples/bom_new.csv
+BOM change report — 4 change(s)
+========================================
+  Added parts: 1
+  Removed parts: 1
+  Quantity changes: 1
+  Revision updates: 1
+
+## Added parts (1)
+  - PART-330   [under: ASSY-100 / SUB-210]
+      qty 2, rev A
+## Removed parts (1)
+  - PART-110   [under: ASSY-100]
+      was qty 1, rev C
+## Quantity changes (1)
+  - PART-310   [under: ASSY-100 / SUB-210]
+      quantity: 4 -> 6
+## Revision updates (1)
+  - PART-320   [under: ASSY-100 / SUB-210]
+      revision: B -> C
+```
+
 ## Tech stack
 
 Python 3.11+ (standard library only at runtime; `pytest` + `ruff` for dev).
@@ -125,9 +150,9 @@ existing library spans BOM-diff → traceability → drafted docs, so that glue
 
 ## Status
 
-Implemented and tested (36 tests): the deterministic core + CLI (`diff`,
-`trace`) and the optional LLM layer (`impact`, `draft`) with provider swap.
-Remaining: documentation polish, packaging, and broader BOM-format coverage.
+Implemented and tested (41 tests, CI green on Python 3.11 & 3.12): the
+deterministic core + CLI (`diff`, `trace`) and the optional LLM layer (`impact`,
+`draft`) with provider swap. Remaining: packaging and broader BOM-format coverage.
 
 ## Limitations (honest disclosure)
 
