@@ -98,3 +98,37 @@ def test_same_part_at_two_levels_change_is_localized(tmp_path):
     rev = cs.by_category(ChangeCategory.REVISION_UPDATED)
     assert len(rev) == 1
     assert rev[0].path == ["TOP", "SUB"]  # localized to the nested instance only
+
+
+def _mk(tmp_path, name, body_rows):
+    p = tmp_path / name
+    p.write_text(
+        "level,part_number,quantity,revision\n" + "\n".join(body_rows) + "\n",
+        encoding="utf-8",
+    )
+    return p
+
+
+def test_simultaneous_quantity_and_revision_change_yields_two_items(tmp_path):
+    old = _mk(tmp_path, "o.csv", ["0,TOP,1,A", "1,P,2,A"])
+    new = _mk(tmp_path, "n.csv", ["0,TOP,1,A", "1,P,5,C"])
+    cs = diff_boms(load_bom_csv(old), load_bom_csv(new))
+    assert cs.counts()["quantity_changed"] == 1
+    assert cs.counts()["revision_updated"] == 1
+
+
+def test_fractional_quantity_is_preserved_as_float(tmp_path):
+    old = _mk(tmp_path, "o.csv", ["0,TOP,1,A", "1,WIRE,0.5,A"])
+    new = _mk(tmp_path, "n.csv", ["0,TOP,1,A", "1,WIRE,1.5,A"])
+    cs = diff_boms(load_bom_csv(old), load_bom_csv(new))
+    q = cs.by_category(ChangeCategory.QUANTITY_CHANGED)[0]
+    assert q.old["quantity"] == 0.5 and isinstance(q.old["quantity"], float)
+    assert q.new["quantity"] == 1.5
+
+
+def test_remove_all_children(tmp_path):
+    old = _mk(tmp_path, "o.csv", ["0,TOP,1,A", "1,X,1,A", "1,Y,1,A"])
+    new = _mk(tmp_path, "n.csv", ["0,TOP,1,A"])
+    cs = diff_boms(load_bom_csv(old), load_bom_csv(new))
+    assert cs.counts()["part_removed"] == 2
+    assert sum(cs.counts().values()) == 2
