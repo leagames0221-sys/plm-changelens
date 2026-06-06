@@ -13,9 +13,10 @@ if git ls-files | grep -E '(^|/)\.claude/(?!settings\.json)|(^|/)(private|privat
   fail=1
 fi
 
-# 2. No internal markers in tracked text.
-#    (Add project-specific customer/internal terms to this list before a flip.)
-markers='\.env|BEGIN [A-Z ]*PRIVATE KEY|redacted|redacted'
+# 2. No secret material in tracked text.
+#    (Project-specific customer/internal term lists are kept OUT of this public
+#    repo; run them from a private sweep list before a visibility flip.)
+markers='BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}|-----BEGIN'
 if git grep -I -n -E "$markers" -- ':!scripts/private_path_check.sh' >/dev/null 2>&1; then
   echo "ERROR: internal marker found in tracked files:" >&2
   git grep -I -n -E "$markers" -- ':!scripts/private_path_check.sh' >&2 || true

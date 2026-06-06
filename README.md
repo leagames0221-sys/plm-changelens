@@ -30,6 +30,21 @@ computation deterministic and the writing assistive.
 The part that affects safety (what changed) never depends on a language model.
 Only the writing assistance does — and the tool runs fully without it.
 
+## Positioning
+
+- **Problem**: in regulated PLM (e.g. medical devices under IEC 62304), every BOM
+  change must be traced to the requirements / design / test artifacts it touches.
+  This is done manually today — slow and error-prone.
+- **Who it's for**: engineers and quality staff doing PLM change control who want
+  AI to draft the change paperwork without trusting AI for the actual change math.
+- **vs. existing tools**: generic structural-diff libraries (e.g. `zss`,
+  `DeepDiff`) compute tree/object differences but know nothing about BOM
+  semantics or change documentation; requirements tools (e.g. `Doorstop`,
+  `Sphinx-Needs`) manage traceability but don't derive impact from a BOM diff.
+  `plm-changelens` is the **integration**: BOM-semantic diff → traceability
+  impact → AI-drafted change docs. No single existing tool spans that path
+  (see [ADR-0001](docs/adr/0001-prior-art-audit.md)).
+
 ## Quick start (no install, no account, no card)
 
 ```bash
@@ -71,6 +86,12 @@ hosted, opt-in with credentials). Swap with `LLM_PROVIDER` or `--llm-provider`.
 Extra columns (description, supplier, …) are preserved. Malformed input is
 rejected with the offending row number — the tool never guesses.
 
+## Tech stack
+
+Python 3.11+ (standard library only at runtime; `pytest` + `ruff` for dev).
+No third-party runtime dependencies, no database, no network unless an external
+LLM provider is explicitly selected.
+
 ## Design
 
 - **Dependency-free runtime** (`dependencies = []`): the deterministic core uses
@@ -82,6 +103,17 @@ rejected with the offending row number — the tool never guesses.
 
 Architecture decisions: [`docs/adr/`](docs/adr/). Prior-art audit:
 [`docs/adr/0001-prior-art-audit.md`](docs/adr/0001-prior-art-audit.md).
+
+## Result & approach
+
+The driving idea was to keep the **safety-critical computation deterministic**
+and push the LLM to the edge. The build followed that: a dependency-free
+Zhang-Shasha tree-edit-distance core produces the exact change set; the LLM only
+explains it, and even then each explanation is **structurally bound** to the
+change that produced it, so a weak or swapped model cannot corrupt traceability.
+The clearest lesson was that the valuable part is the *integration* — no single
+existing library spans BOM-diff → traceability → drafted docs, so that glue
+(and the determinism boundary) is where the design effort went.
 
 ## Status
 
